@@ -87,12 +87,17 @@ RegisterNetEvent('qb-atms:server:enteratm',function ()
                     info.cardActive = false
                 end
             end
+			local cardLocked = MySQL.Sync.fetchScalar('SELECT cardLocked FROM bank_cards WHERE cardNumber = ?', { info.cardNumber })
+            if cardLocked == 1 then
+                    info.cardActive = false
+            end
             cards[#cards+1] = v.info
         end
         for _, v in pairs(masters) do
             local info = v.info
             local cardNum = info.cardNumber
             local cardHolder = info.citizenid
+
             local xCH = QBCore.Functions.GetPlayerByCitizenId(cardHolder)
             if xCH ~= nil then
                 if xCH.PlayerData.charinfo.card ~= cardNum then
@@ -104,6 +109,10 @@ RegisterNetEvent('qb-atms:server:enteratm',function ()
                 if xCH.card ~= cardNum then
                     info.cardActive = false
                 end
+            end
+			local cardLocked = MySQL.Sync.fetchScalar('SELECT cardLocked FROM bank_cards WHERE cardNumber = ?', { info.cardNumber })
+            if cardLocked == 1 then
+                    info.cardActive = false
             end
             cards[#cards+1] = v.info
         end
@@ -131,7 +140,7 @@ RegisterNetEvent('qb-atms:server:doAccountWithdraw', function(data)
                 local bankCount = xCH.Functions.GetMoney('bank') - tonumber(data.amount)
                 if bankCount > 0 then
                     xCH.Functions.RemoveMoney('bank', tonumber(data.amount))
-                    xPlayer.Functions.AddMoney('cash', tonumber(data.amount))
+                    xPlayer.Functions.AddMoney('cash', tonumber(data.amount), "ATM")
                     dailyWithdraws[cardHolder] = dailyWithdraws[cardHolder] + tonumber(data.amount)
                     TriggerClientEvent('QBCore:Notify', src, "Withdraw $" .. data.amount .. ' from credit card. Daily Withdraws: ' .. dailyWithdraws[cardHolder], "success")
                 else
@@ -148,7 +157,7 @@ RegisterNetEvent('qb-atms:server:doAccountWithdraw', function(data)
                 local xCH = json.decode(player[1])
                 local bankCount = tonumber(xCH.money.bank) - tonumber(data.amount)
                 if bankCount > 0  then
-                    xPlayer.Functions.AddMoney('cash', tonumber(data.amount))
+                    xPlayer.Functions.AddMoney('cash', tonumber(data.amount), "ATM")
                     xCH.money.bank = bankCount
                     MySQL.Async.execute('UPDATE players SET money = ? WHERE citizenid = ?', { xCH.money, cardHolder })
                     dailyWithdraws[cardHolder] = dailyWithdraws[cardHolder] + tonumber(data.amount)
