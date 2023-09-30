@@ -60,8 +60,8 @@ else
             local hash = joaat(v)
             local atm = IsObjectNearPoint(hash, playerCoords.x, playerCoords.y, playerCoords.z, 1.5)
             if atm then
-                local hasVisa = exports['codem-inventory']:HasItem('visa', 1)
-                local hasMastercard = exports['codem-inventory']:HasItem('mastercard', 1)
+                local hasVisa = exports['qb-inventory']:HasItem('visa', 1)
+                local hasMastercard = exports['qb-inventory']:HasItem('mastercard', 1)
                 if hasVisa or hasMastercard then
                     TriggerServerEvent('qb-atms:server:enteratm')
                 else
